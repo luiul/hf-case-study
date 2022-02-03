@@ -222,6 +222,8 @@ cython_debug/
 # Case Study Material and Data
 material
 data
+resources/
+notebook/word.png
 
 # Created by https://www.toptal.com/developers/gitignore/api/dotenv
 # Edit at https://www.toptal.com/developers/gitignore?templates=dotenv

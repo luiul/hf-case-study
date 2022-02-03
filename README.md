@@ -1,16 +1,12 @@
 # Hellofresh Case Study
 
-## Assumptions
-
-- We ignore rounding errors (unit price and conversion rate are floats)
-
 ## Data Engineering
 
 To prepare the analysis, we perform the following steps:
 
-- Describe raw data
-- Convert txt file to csv
-- Engieneer new data frame and export file to csv
+- Perform exploratory analysis on raw data
+- Convert TXT file to CSV
+- Engineer new data frame and export file to CSV
 
 ### Raw Columns and Description
 
@@ -35,56 +31,56 @@ The raw data frame contains the following columns:
 | to_eur                | [0.61, 1.17, 1.0]                    | conversion rate                       | EUR/[currency]    |
 | sku_category          | ['PTN', 'PRO', 'DAI']                | product category                      | 1                 |
 
-Note that order type is a boolean value. 
+Notes on the raw data: 
 
-We do the following modifications to the raw data: 
-
-- Drop `unit_weight_uom` column (it contains no new information)
-- Translate rows from German suppliers to English
-- Convert string date into datetime object (see [strftime cheatsheet](https://strftime.org/))
+- The order type can be described as a boolean value
+- German values are translated into English
+- We omit columns without useful information, e.g. the column "unit_weight_uom" or "expected_arrival_date"
+- Products are categorized into dairy products, processed products or proteins
+- The first tag in the "product" column seems to be the most important
 
 ### Engineered Columns and Description
 
 The engineered data frame contains the following columns: 
 
-| col_name              | unique_values                        | description                              | UOM                             |
-| --------------------- | ------------------------------------ | ---------------------------------------- | ------------------------------- |
-| fc                    | ['SY', 'GR', 'VE', 'CB', 'NW', 'MP'] | procurement HUBs                         | -                               |
-| week                  | 36                                   | week number                              | week                            |
-| supplier_name         | 136                                  | name of order supplier                   | -                               |
-| prod_sku              | 784                                  | SKU for unit product                     | -                               |
-| prod_name             | 768                                  | name of unit product                     | -                               |
-| prod_tags             | 226                                  | tags for unit product                    | -                               |
-| prod_price_local      | 417                                  | price in local currency for unit product | [local_currency] / product_unit |
-| order_size            | 4315                                 | size of order                            | product_units / order           |
-| order_type            | ['Regular', 'Emergency']             | type of order                            | (Boolean)                       |
-| prod_weight           | 92                                   | weight of unit product                   | g / product_unit                |
-| supplier_country      | ['AU', 'UK', 'DE']                   | country of order supplier                | -                               |
-| local_curr            | ['AUD', 'GBP', 'EUR']                | supplier's local currency                | -                               |
-| local_curr_to_eur     | [0.61, 1.17, 1.0]                    | conversion rate to EUR                   | EUR / [local_curency]           |
-| prod_category         | ['PTN', 'PRO', 'DAI']                | category of unit product                 | -                               |
-| prod_price_eur        | 660                                  | price in EUR for unit product            | EUR / product_unit              |
-| order_weight          | 6999                                 | total weight of the order                | kg / order                      |
-| order_cost_eur        | 11533                                | total cost of the order                  | EUR / order                     |
-| order_eur_cost_per_kg | 1633                                 | total cost per kg order                  | EUR / kg                        |
+| col_name             | unique_values                        |
+| -------------------- | ------------------------------------ |
+| country              | ['UK', 'DE', 'AU']                   |
+| distribution_center  | ['GR', 'VE', 'CB', 'SY', 'MP', 'NW'] |
+| order_price_eur      | 11533                                |
+| order_size           | 4315                                 |
+| order_type           | ['Regular', 'Emergency']             |
+| order_weight_kg      | 6999                                 |
+| sku_category         | ['PTN', 'DAI', 'PRO']                |
+| sku_id               | 784                                  |
+| sku_name             | 768                                  |
+| sku_price_eur        | 660                                  |
+| sku_price_eur_per_kg | 881                                  |
+| sku_tags             | 226                                  |
+| sku_weight_g         | 92                                   |
+| supplier_name        | 136                                  |
+| week                 | 36                                   |
+| sku_count            | 91                                   |
+| sku_count_rank       | 784                                  |
+| new_supplier         | [1, 0]                               |
+| sku_main_tag         | 74                                   |
 
-The 
+The (transposed) describe method returns: 
 
-The (transposed ) describe method returns: 
-
-|                       |    mean |      std |  min |    25% |     50% |     75% |       max |
-| --------------------- | ------: | -------: | ---: | -----: | ------: | ------: | --------: |
-| prod_price_local      |    2.07 |     1.75 | 0.01 |   0.76 |    1.73 |    2.81 |     18.52 |
-| order_size            | 7709.85 | 17083.60 | 2.00 | 320.00 | 1414.00 | 6660.00 | 275400.00 |
-| prod_weight           |  324.08 |   210.54 | 8.00 | 150.00 |  300.00 |  450.00 |    1500.0 |
-| local_curr_to_eur     |    1.01 |     0.23 | 0.61 |   1.00 |    1.17 |    1.17 |      1.17 |
-| prod_price_eur        |    1.99 |     1.50 | 0.01 |   0.68 |    1.80 |    3.00 |     12.56 |
-| order_weight          | 1294.60 |  2716.36 | 0.36 |  90.91 |  340.50 | 1344.00 |  50688.00 |
-| order_cost_eur        | 6019.25 |  9674.99 | 0.19 | 573.16 | 2000.00 | 7295.29 | 133128.00 |
-| order_eur_cost_per_kg |    6.89 |     5.10 | 0.06 |   4.49 |    6.10 |    7.93 |    125.90 |
-
+|                      | count | mean        | std         | min      | 25%     | 50%    | 75%        | max     |
+|----------------------|-------|-------------|-------------|----------|---------|--------|------------|---------|
+| order_price_eur      | 13526 | 6019.246106 | 9674.990489 | 0.1872   | 573.156 | 2000   | 7295.28585 | 133128  |
+| order_size           | 13526 | 7709.846518 | 17083.60225 | 2        | 320     | 1414   | 6660       | 275400  |
+| order_weight_kg      | 13526 | 1294.599583 | 2716.356409 | 0.36     | 90.9125 | 340.5  | 1344       | 50688   |
+| sku_price_eur        | 13526 | 1.987639    | 1.502323    | 0.0061   | 0.6786  | 1.8018 | 2.9952     | 12.56   |
+| sku_price_eur_per_kg | 13526 | 6.892391    | 5.102869    | 0.055556 | 4.4928  | 6.1    | 7.93       | 125.904 |
+| sku_weight_g         | 13526 | 324.082803  | 210.536455  | 8        | 150     | 300    | 450        | 1500    |
+| sku_count            | 13526 | 60.081177   | 58.896358   | 1        | 16      | 38     | 85         | 238     |
+| sku_count_rank       | 13526 | 151.431096  | 164.43608   | 1        | 26      | 86     | 229        | 784     |
+| new_supplier         | 13526 | 0.010055    | 0.099771    | 0        | 0       | 0      | 0          | 1       |
 
 Note that there is a high correlation between **product weight** and **local product price**. 
 
-## Open Questions
+## Analysis and Data Visualization
 
+The data analysis and visualization is performed in a jupyter notebook and Tableau. 
